@@ -1,9 +1,7 @@
 # app.py
 from _future_ import annotations
 
-# ============================== #
-#            Imports             #
-# ============================== #
+
 from datetime import datetime
 from urllib.parse import urljoin, urlparse, quote_plus
 from typing import List, Optional, Dict, Union
@@ -18,9 +16,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, AnyHttpUrl
 
 
-# ============================== #
-#         App Metadata           #
-# ============================== #
+
 TAGS_METADATA = [
     {"name": "Health", "description": "Basic health checks."},
     {"name": "Insights", "description": "Fetch structured insights from a Shopify storefront."},
@@ -36,9 +32,9 @@ app = FastAPI(
     ),
     openapi_tags=TAGS_METADATA,
     swagger_ui_parameters={
-        "defaultModelsExpandDepth": -1,   # hide schemas pane by default
-        "docExpansion": "list",           # collapse endpoints
-        "displayRequestDuration": True,   # show request durations
+        "defaultModelsExpandDepth": -1,   
+        "docExpansion": "list",           
+        "displayRequestDuration": True,   
     },
 )
 
@@ -46,9 +42,7 @@ api = APIRouter()
 ui = APIRouter()
 
 
-# ============================== #
-#            Schemas             #
-# ============================== #
+
 class Product(BaseModel):
     title: str
     url: Optional[str] = None
@@ -57,7 +51,7 @@ class Product(BaseModel):
 
 
 class Policy(BaseModel):
-    type: str          # privacy/refund/return/shipping/terms
+    type: str          
     url: Optional[str] = None
     text_excerpt: Optional[str] = None
 
@@ -87,9 +81,7 @@ class CompetitorResult(BaseModel):
     competitors: List[BrandContext] = []
 
 
-# ============================== #
-#         Regex & Constants      #
-# ============================== #
+
 SOCIAL_MAP = {
     "instagram.com": "instagram",
     "facebook.com": "facebook",
@@ -106,9 +98,7 @@ EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 PHONE_RE = re.compile(r"\+?\d[\d\-\s()]{6,}\d")
 
 
-# ============================== #
-#       Low-level HTTP utils     #
-# ============================== #
+
 def text_excerpt(s: str, n: int = 800) -> str:
     s = " ".join((s or "").split())
     return s[:n]
@@ -152,9 +142,7 @@ def fetch_json_ok(client: httpx.Client, url: str) -> Optional[dict]:
     return None
 
 
-# ============================== #
-#     Parsers & Page Scrapers    #
-# ============================== #
+
 def scrape_brand_name(soup: Optional[BeautifulSoup]) -> Optional[str]:
     if not soup:
         return None
@@ -327,9 +315,7 @@ def scrape_important_links(client: httpx.Client, base: str) -> Dict[str, Optiona
     return out
 
 
-# ============================== #
-#         Aggregators            #
-# ============================== #
+
 def get_brand_context(client: httpx.Client, website_url: str) -> BrandContext:
     base = website_url if website_url.endswith("/") else website_url + "/"
     home = fetch_html(client, base, "/")
@@ -358,9 +344,7 @@ def get_brand_context(client: httpx.Client, website_url: str) -> BrandContext:
     )
 
 
-# ============================== #
-#       Competitor Finder        #
-# ============================== #
+
 def looks_like_shopify(client: httpx.Client, url: str) -> bool:
     root = normalize_root(url)
     test_url = urljoin(root, "/products.json?limit=1")
@@ -433,9 +417,7 @@ def find_competitor_candidates(
     return filtered[:limit]
 
 
-# ============================== #
-#            Routers             #
-# ============================== #
+
 @ui.get("/", response_class=HTMLResponse, tags=["Health"])
 def home():
     """Simple zero-dependency UI to try the endpoints."""
@@ -583,6 +565,6 @@ def competitors(
         client.close()
 
 
-# Mount routers (UI first so "/" works)
+
 app.include_router(ui)
 app.include_router(api)
